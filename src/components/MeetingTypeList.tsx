@@ -13,8 +13,12 @@ import ReactDatePicker from "react-datepicker";
 import { useToast } from "./ui/use-toast";
 import { Input } from "./ui/input";
 
+const dateTime = new Date();
+const futureDateTime = new Date(dateTime.getTime() + 30 * 60000);
+
 const initialValues = {
-  dateTime: new Date(),
+  dateTime,
+  futureDateTime,
   description: "",
   link: "",
 };
@@ -40,8 +44,14 @@ const MeetingTypeList = () => {
       const id = crypto.randomUUID();
       const call = client.call("default", id);
       if (!call) throw new Error("Failed to create meeting");
-      const startsAt =
-        values.dateTime.toISOString() || new Date(Date.now()).toISOString();
+
+      let startsAt;
+      if (meetingState === "isScheduleMeeting") {
+        startsAt = values.futureDateTime.toISOString();
+      } else {
+        startsAt =
+          values.dateTime.toISOString() || new Date(Date.now()).toISOString();
+      }
       const description = values.description || "Instant Meeting";
       await call.getOrCreate({
         data: {
@@ -121,8 +131,10 @@ const MeetingTypeList = () => {
               Select Date and Time
             </label>
             <ReactDatePicker
-              selected={new Date(values.dateTime.getTime() + 30 * 60000)}
-              onChange={(date) => setValues({ ...values, dateTime: date! })}
+              selected={values.futureDateTime}
+              onChange={(date) =>
+                setValues({ ...values, futureDateTime: date! })
+              }
               showTimeSelect
               timeFormat="HH:mm"
               timeIntervals={15}

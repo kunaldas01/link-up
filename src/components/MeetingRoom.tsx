@@ -6,13 +6,10 @@ import {
   CallParticipantsList,
   CallStatsButton,
   CallingState,
-  PaginatedGridLayout,
-  SpeakerLayout,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Users, LayoutList } from "lucide-react";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,8 +20,10 @@ import {
 import Loader from "./Loader";
 import EndCallButton from "./EndCallButton";
 import { cn } from "@/lib/utils";
+import MobileCallLayout from "./MobileCallLayout";
+import CallLayout from "./CallLayout";
 
-type CallLayoutType = "grid" | "speaker-left" | "speaker-right";
+type CallLayoutType = "grid" | "speaker-left" | "speaker-right"| "speaker-top"| "speaker-bottom";
 
 const MeetingRoom = () => {
   const searchParams = useSearchParams();
@@ -39,22 +38,16 @@ const MeetingRoom = () => {
 
   if (callingState !== CallingState.JOINED) return <Loader />;
 
-  const CallLayout = () => {
-    switch (layout) {
-      case "grid":
-        return <PaginatedGridLayout />;
-      case "speaker-right":
-        return <SpeakerLayout participantsBarPosition="left" />;
-      default:
-        return <SpeakerLayout participantsBarPosition="right" />;
-    }
-  };
+  const mobileLayout=["Grid", "Speaker-top", "Speaker-bottom"];
+  const pcLayout=["Grid", "Speaker-Left", "Speaker-Right"];
+  const isMobile = window.screen.width < 768;
 
   return (
     <section className="relative h-screen w-full overflow-hidden pt-4 text-white">
       <div className="relative flex h-[90%] size-full items-center justify-center">
         <div className=" flex size-full max-w-[1000px] items-center">
-          <CallLayout />
+          {isMobile? <MobileCallLayout layout={layout} />:<CallLayout layout={layout} />}
+          
         </div>
         <div
           className={cn("h-[calc(100vh-86px)] hidden ml-2", {
@@ -75,7 +68,7 @@ const MeetingRoom = () => {
             </DropdownMenuTrigger>
           </div>
           <DropdownMenuContent className="border-dark-1 bg-dark-1 text-white">
-            {["Grid", "Speaker-Left", "Speaker-Right"].map((item, index) => (
+            {(isMobile?mobileLayout:pcLayout).map((item, index) => (
               <div key={index}>
                 <DropdownMenuItem
                   onClick={() =>
